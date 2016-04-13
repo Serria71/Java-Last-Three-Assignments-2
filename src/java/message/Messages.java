@@ -7,6 +7,7 @@ package message;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -28,7 +29,13 @@ public class Messages implements Serializable {
     private String author;
     private String senttime;
     
-    public Messages () {}
+    public Messages(int id, String title, String author, String contents, String senttime) {
+        this.messageId = id;
+        this.title = title;
+        this.author = author;
+        this.contents = contents;
+        this.senttime = senttime;
+    }
     
     public Messages(JsonObject json) {
         // Requires complex conversion as jquery.val() does not set JSON Type

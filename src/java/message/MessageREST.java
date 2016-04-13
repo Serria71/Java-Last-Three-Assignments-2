@@ -15,11 +15,14 @@
  */
 package message;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.json.Json;
@@ -47,22 +50,32 @@ import javax.ws.rs.core.Response;
 @RequestScoped
 public class MessageREST {
 
-    @PersistenceContext(unitName = "samplemessagePU")
-    EntityManager em;
-
-    @Inject
-    UserTransaction transaction;
-
     List<Messages> messageList;
-
+       
     @GET
     @Produces("application/json")
     public Response getAll() {
         JsonArrayBuilder json = Json.createArrayBuilder();
-        Query q = em.createNamedQuery("Message.findAll");
-        messageList = q.getResultList();
-        for (Messages p : messageList) {
-            json.add(p.toJSON());
+        try (Connection conn = DBUtils.getConnection()){
+            messageList = new ArrayList<>();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM messages");
+            while (rs.next()){
+                Messages m = new Messages(
+                    rs.getInt("messageId"),
+                    rs.getString("title"),
+                    rs.getString("author"),
+                    rs.getString("content"),
+                    rs.getString("senttime")
+                );
+                messageList.add(m);
+            }
+            for (Messages p : messageList){
+                json.add(p.toJSON());        
+            }
+            return Response.ok(json.build().toString()).build();
+        } catch (SQLException ex){
+            
         }
         return Response.ok(json.build().toString()).build();
     }
@@ -71,29 +84,60 @@ public class MessageREST {
     @Path("{id}")
     @Produces("application/json")
     public Response getById(@PathParam("id") int id) {
-        Query q = em.createQuery("SELECT m FROM Message m WHERE m.messageId = :messageId");
-        q.setParameter("messageId", id);
-        Messages p = (Messages) q.getSingleResult();
-        return Response.ok(p.toJSON().toString()).build();
+        try (Connection conn = DBUtils.getConnection()){
+            JsonArrayBuilder json = Json.createArrayBuilder();
+            messageList = new ArrayList<>();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM messages WHERE messageId = " + id);
+            while (rs.next()){
+                Messages m = new Messages(
+                    rs.getInt("messageId"),
+                    rs.getString("title"),
+                    rs.getString("author"),
+                    rs.getString("content"),
+                    rs.getString("senttime")
+                );
+                messageList.add(m);
+            }
+            for (Messages p : messageList){
+                json.add(p.toJSON());        
+            }
+            return Response.ok(json.build().toString()).build();
+        } catch (SQLException ex){
+            
+        }
+        return Response.ok(json.build().toString()).build();
     }
     
     @GET
     @Path("{startDate}/{endDate}")
     @Produces("application/json")
     public Response getByDate(@PathParam("startDate") String startDate, @PathParam("endDate") String endDate){
-        
+        JsonArrayBuilder json = Json.createArrayBuilder();
         //TimeZone tz = TimeZone.getTimeZone("UTC");
         //DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
         //df.setTimeZone(tz);
         //String nowAsIso = df.format(new Date());
-        
-        JsonArrayBuilder json = Json.createArrayBuilder();
-        Query q = em.createQuery("SELECT p FROM Message p WHERE p.messageDate IS BETWEEN :startDate AND :endDate");
-        q.setParameter("startDate", startDate);
-        q.setParameter("endDate", endDate);
-        messageList = q.getResultList();
-        for (Messages p : messageList){
-            json.add(p.toJSON());        
+        try (Connection conn = DBUtils.getConnection()){
+            messageList = new ArrayList<>();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM messages WHERE senttime  IS BETWEEN " + startDate + " AND " + endDate);
+            while (rs.next()){
+                Messages m = new Messages(
+                    rs.getInt("messageId"),
+                    rs.getString("title"),
+                    rs.getString("author"),
+                    rs.getString("content"),
+                    rs.getString("senttime")
+                );
+                messageList.add(m);
+            }
+            for (Messages p : messageList){
+                json.add(p.toJSON());        
+            }
+            return Response.ok(json.build().toString()).build();
+        } catch (SQLException ex){
+            
         }
         return Response.ok(json.build().toString()).build();
     }   
@@ -101,17 +145,22 @@ public class MessageREST {
     @POST
     @Consumes("application/json")
     public Response add(JsonObject json) {
-        Response result;
-        try {
-            transaction.begin();
-            Messages p = new Messages(json);
-            em.persist(p);
-            transaction.commit();
-            result = Response.ok().build();
-        } catch (Exception ex) {
-            result = Response.status(500).entity(ex.getMessage()).build();
+        int id = json.getInt("messageId");
+        String title = json.getString("title");
+        String content = json.getString("content");
+        String author = json.getString("author");
+        String senttime = json.getString("senttime");
+        
+        try (Connection conn = DBUtils.getConnection()){
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("INSERT INTO messages VALUES (" + id + "\"" + title + "\", \"" + content + "\","
+                    + " \"" + author + "\", " + "\"" + senttime + "\");");
+            
+        } catch (SQLException ex){
+            
         }
-        return result;
+        //return Response.ok();
+        
     }
 
     @PUT
