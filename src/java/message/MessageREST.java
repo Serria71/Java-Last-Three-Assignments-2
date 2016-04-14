@@ -21,17 +21,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.transaction.UserTransaction;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -84,8 +77,9 @@ public class MessageREST {
     @Path("{id}")
     @Produces("application/json")
     public Response getById(@PathParam("id") int id) {
+        JsonArrayBuilder json = Json.createArrayBuilder();
         try (Connection conn = DBUtils.getConnection()){
-            JsonArrayBuilder json = Json.createArrayBuilder();
+            
             messageList = new ArrayList<>();
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM messages WHERE messageId = " + id);
@@ -145,6 +139,8 @@ public class MessageREST {
     @POST
     @Consumes("application/json")
     public Response add(JsonObject json) {
+        
+        Response result;
         int id = json.getInt("messageId");
         String title = json.getString("title");
         String content = json.getString("content");
@@ -153,31 +149,31 @@ public class MessageREST {
         
         try (Connection conn = DBUtils.getConnection()){
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("INSERT INTO messages VALUES (" + id + "\"" + title + "\", \"" + content + "\","
+            stmt.executeQuery("INSERT INTO messages VALUES (" + id + "\"" + title + "\", \"" + content + "\","
                     + " \"" + author + "\", " + "\"" + senttime + "\");");
-            
+            result = Response.ok().build();
         } catch (SQLException ex){
-            
+            result = Response.status(500).entity(ex.getMessage()).build();
         }
-        //return Response.ok();
-        
+        return result;
     }
 
     @PUT
     @Consumes("application/json")
     public Response edit(JsonObject json) {
         Response result;
-        try {
-            transaction.begin();
-            Messages p = (Messages) em.createNamedQuery("Message.findByMessageId")
-                    .setParameter("messageId", json.getInt("messageId")).getSingleResult();
-            p.setTitle(json.getString("title"));
-            p.setContents(json.getString("content"));
-            p.setAuthor(json.getString("author"));
-            em.persist(p);
-            transaction.commit();
+        
+        int id = json.getInt("messageId");
+        String title = json.getString("title");
+        String content = json.getString("content");
+        String author = json.getString("author");
+        String senttime = json.getString("senttime");
+        //Not 100% sure how to get this part working without putting blanks into the data when nothing is entered.
+        try (Connection conn = DBUtils.getConnection()){
+            Statement stmt = conn.createStatement();
+            stmt.executeQuery("UPDATE messages WHERE id = " + id + " SET ");
             result = Response.ok().build();
-        } catch (Exception ex) {
+        } catch (SQLException ex){
             result = Response.status(500).entity(ex.getMessage()).build();
         }
         return result;
@@ -187,12 +183,9 @@ public class MessageREST {
     @Path("{id}")
     public Response delete(@PathParam("id") int id) {
         Response result;
-        try {
-            transaction.begin();
-            Messages p = (Messages) em.createNamedQuery("Message.findByMessageId")
-                    .setParameter("messageId", id).getSingleResult();
-            em.remove(p);
-            transaction.commit();
+        try (Connection conn = DBUtils.getConnection()){
+            Statement stmt = conn.createStatement();
+            stmt.executeQuery("DELETE * FROM messages WHERE id = " + id);
             result = Response.ok().build();
         } catch (Exception ex) {
             result = Response.status(500).entity(ex.getMessage()).build();
