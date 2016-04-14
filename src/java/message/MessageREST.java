@@ -48,6 +48,7 @@ public class MessageREST {
     @GET
     @Produces("application/json")
     public Response getAll() {
+        Response result;
         JsonArrayBuilder json = Json.createArrayBuilder();
         try (Connection conn = DBUtils.getConnection()){
             messageList = new ArrayList<>();
@@ -66,17 +67,18 @@ public class MessageREST {
             for (Messages p : messageList){
                 json.add(p.toJSON());        
             }
-            return Response.ok(json.build().toString()).build();
+            result = Response.ok(json.build().toString()).build();
         } catch (SQLException ex){
-            
+           result = Response.status(500).entity(ex.getMessage()).build(); 
         }
-        return Response.ok(json.build().toString()).build();
+        return result;
     }
 
     @GET
     @Path("{id}")
     @Produces("application/json")
     public Response getById(@PathParam("id") int id) {
+        Response result;
         JsonArrayBuilder json = Json.createArrayBuilder();
         try (Connection conn = DBUtils.getConnection()){
             
@@ -96,17 +98,18 @@ public class MessageREST {
             for (Messages p : messageList){
                 json.add(p.toJSON());        
             }
-            return Response.ok(json.build().toString()).build();
+            result = Response.ok(json.build().toString()).build();
         } catch (SQLException ex){
-            
+            result = Response.status(500).entity(ex.getMessage()).build();
         }
-        return Response.ok(json.build().toString()).build();
+        return result;
     }
     
     @GET
     @Path("{startDate}/{endDate}")
     @Produces("application/json")
     public Response getByDate(@PathParam("startDate") String startDate, @PathParam("endDate") String endDate){
+        Response result;
         JsonArrayBuilder json = Json.createArrayBuilder();
         //TimeZone tz = TimeZone.getTimeZone("UTC");
         //DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
@@ -129,11 +132,11 @@ public class MessageREST {
             for (Messages p : messageList){
                 json.add(p.toJSON());        
             }
-            return Response.ok(json.build().toString()).build();
+            result = Response.ok(json.build().toString()).build();
         } catch (SQLException ex){
-            
+            result = Response.status(500).entity(ex.getMessage()).build();
         }
-        return Response.ok(json.build().toString()).build();
+        return result;
     }   
 
     @POST

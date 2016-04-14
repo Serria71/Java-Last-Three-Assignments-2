@@ -21,13 +21,12 @@ import javax.persistence.Id;
  */
 public class Messages implements Serializable {
 
-    @Id @GeneratedValue(strategy=GenerationType.IDENTITY)
      
-    private int messageId;
+    int messageId;
     private String title;
     private String contents;
     private String author;
-    private String senttime;
+    String senttime;
     
     public Messages(int id, String title, String author, String contents, String senttime) {
         this.messageId = id;
