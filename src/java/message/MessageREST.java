@@ -149,7 +149,7 @@ public class MessageREST {
         
         try (Connection conn = DBUtils.getConnection()){
             Statement stmt = conn.createStatement();
-            stmt.executeQuery("INSERT INTO messages VALUES (" + id + "\"" + title + "\", \"" + content + "\","
+            stmt.executeQuery("INSERT INTO messages VALUES (" + id + ", \"" + title + "\", \"" + content + "\","
                     + " \"" + author + "\", " + "\"" + senttime + "\");");
             result = Response.ok().build();
         } catch (SQLException ex){
