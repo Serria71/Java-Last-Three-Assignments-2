@@ -23,10 +23,10 @@ public class DBUtils {
             Logger.getLogger(DBUtils.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
-        String hostname = "";
-        String port = "";
-        String dbname = "";
-        String username = "";
+        String hostname = "localhost";
+        String port = "3306";
+        String dbname = "test";
+        String username = "root";
         String password = "";
         String jdbc = String.format("jdbc:mysql://%s:%s/%s", hostname, port, dbname);
         return DriverManager.getConnection(jdbc, username, password);

@@ -23,7 +23,7 @@ import javax.ws.rs.core.Application;
  *
  * @author Len Payne <len.payne@lambtoncollege.ca>
  */
-@javax.ws.rs.ApplicationPath("r")
+@javax.ws.rs.ApplicationPath("m")
 public class ApplicationConfig extends Application {
 
     @Override
