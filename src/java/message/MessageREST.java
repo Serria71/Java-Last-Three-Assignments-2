@@ -44,7 +44,6 @@ import javax.ws.rs.core.Response;
  *
  * @author Len Payne <len.payne@lambtoncollege.ca>
  */
-@Path("/m")
 @RequestScoped
 public class MessageREST {
 
@@ -128,7 +127,7 @@ public class MessageREST {
         try (Connection conn = DBUtils.getConnection()){
             messageList = new ArrayList<>();
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM messages WHERE senttime  IS BETWEEN \"" + startDate + "\" AND \"" + endDate + "\";");
+            ResultSet rs = stmt.executeQuery("SELECT * FROM messages WHERE senttime IS BETWEEN \"" + startDate + "\" AND \"" + endDate + "\";");
             while (rs.next()){
                 Messages m = new Messages(
                     rs.getInt("messageId"),
