@@ -22,14 +22,14 @@ import javax.persistence.Id;
 public class Messages implements Serializable {
 
      
-    int messageId;
+    int id;
     private String title;
     private String contents;
     private String author;
     String senttime;
     
     public Messages(int id, String title, String author, String contents, String senttime) {
-        this.messageId = id;
+        this.id = id;
         this.title = title;
         this.author = author;
         this.contents = contents;
@@ -38,19 +38,19 @@ public class Messages implements Serializable {
     
     public Messages(JsonObject json) {
         // Requires complex conversion as jquery.val() does not set JSON Type
-        messageId = Integer.parseInt(json.getString("MessageID", "0"));
+        id = Integer.parseInt(json.getString("MessageID", "0"));
         title = json.getString("Title");
         contents = json.getString("Contents");
         author = json.getString("Author");
         senttime = json.getString("Time");
     }
 
-    public int getMessageId() {
-        return messageId;
+    public int getId() {
+        return id;
     }
 
-    public void setMessageId(int messageId) {
-        this.messageId = messageId;
+    public void setId(int messageId) {
+        this.id = id;
     }
 
     public String getTitle() {
@@ -87,7 +87,7 @@ public class Messages implements Serializable {
     
     public JsonObject toJSON() {
         return Json.createObjectBuilder()
-                .add("ProductID", messageId)
+                .add("MessageID", id)
                 .add("Name", title)
                 .add("Content", contents)
                 .add("Author", author)

@@ -20,12 +20,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import javax.enterprise.context.RequestScoped;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -44,6 +46,7 @@ import javax.ws.rs.core.Response;
  *
  * @author Len Payne <len.payne@lambtoncollege.ca>
  */
+@Path("/m")
 @RequestScoped
 public class MessageREST {
 
@@ -115,22 +118,14 @@ public class MessageREST {
     public Response getByDate(@PathParam("startDate") String startDate, @PathParam("endDate") String endDate) throws ParseException{
         Response result;
         JsonArrayBuilder json = Json.createArrayBuilder();
-        //TimeZone tz = TimeZone.getTimeZone("UTC");
-        //DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
-        //df.setTimeZone(tz);
-        //String nowAsIso = df.format(new Date());
-        //SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-        //sdf.setLenient(false);
-        //Date startDate2 = sdf.parse(startDate);
-        //Date endDate2 = sdf.parse(endDate);
-        
+                            
         try (Connection conn = DBUtils.getConnection()){
             messageList = new ArrayList<>();
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM messages WHERE senttime IS BETWEEN \"" + startDate + "\" AND \"" + endDate + "\";");
+            ResultSet rs = stmt.executeQuery("SELECT * FROM messages WHERE senttime BETWEEN '" + startDate + "' AND '" + endDate + "';");
             while (rs.next()){
                 Messages m = new Messages(
-                    rs.getInt("messageId"),
+                    rs.getInt("id"),
                     rs.getString("title"),
                     rs.getString("author"),
                     rs.getString("content"),
@@ -157,7 +152,7 @@ public class MessageREST {
         String content = json.getString("content");
         String author = json.getString("author");
         String senttime = json.getString("senttime");
-        
+    
         try (Connection conn = DBUtils.getConnection()){
             Statement stmt = conn.createStatement();
             stmt.executeUpdate("INSERT INTO messages VALUES (" + id + ", \"" + title + "\", \"" + content + "\","
@@ -194,7 +189,7 @@ public class MessageREST {
         Response result;
         try (Connection conn = DBUtils.getConnection()){
             Statement stmt = conn.createStatement();
-            stmt.executeQuery("DELETE FROM messages WHERE id = " + id);
+            stmt.executeUpdate("DELETE FROM messages WHERE id = " + id);
             result = Response.ok().build();
         } catch (Exception ex) {
             result = Response.status(500).entity(ex.getMessage()).build();
